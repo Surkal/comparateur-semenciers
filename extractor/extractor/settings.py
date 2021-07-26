@@ -65,7 +65,7 @@ ROBOTSTXT_OBEY = True
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'extractor.pipelines.BoiteAMotsPipeline': 300,
+    'extractor.pipelines.BoiteAGrainesPipeline': 300,
     'extractor.pipelines.KokopelliPipeline': 301,
 }
 
