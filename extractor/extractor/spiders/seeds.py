@@ -4,8 +4,8 @@ from scrapy.utils.url import parse_url
 from ..items import ProductItem
 
 
-class BoiteAMotsSpider(scrapy.Spider):
-    name = 'boite-a-mots'
+class BoiteAGrainesSpider(scrapy.Spider):
+    name = 'boite-a-graines'
     start_urls = [
         'https://laboiteagraines.com/categorie-produit/2-graines-semences-graine-semence-potageres-legumes/15-graines-legumes-feuille/',
         'https://laboiteagraines.com/categorie-produit/2-graines-semences-graine-semence-potageres-legumes/',
@@ -24,6 +24,9 @@ class BoiteAMotsSpider(scrapy.Spider):
             yield scrapy.Request(response.urljoin(next_page_url))
 
     def parse_product(self, response):
+        """
+        Analysis of the product page.
+        """
         item = ProductItem()
         item['url'] = response.url
         item['vendor'] = parse_url(response.url).netloc
@@ -53,6 +56,9 @@ class KokopelliSpider(scrapy.Spider):
             yield scrapy.Request(response.urljoin(next_page_url))
         
     def parse_product(self, response):
+        """
+        Analysis of the product page.
+        """
         item = ProductItem()
         item['url'] = response.url
         item['vendor'] = parse_url(response.url).netloc
@@ -69,3 +75,44 @@ class KokopelliSpider(scrapy.Spider):
         item['available'] = data['offers']['availability'].endswith('InStock')
         item['latin_name'] = data['alternateName']
         return item
+
+
+class BiaugermeSpider(scrapy.Spider):
+    name = 'biaugerme'
+    start_urls = [
+        'https://www.biaugerme.com/potageres',
+        'https://www.biaugerme.com/fleurs/toutes-nos-fleurs',
+        'https://www.biaugerme.com/aromatiques'
+    ]
+
+    def parse(self, response):
+        product_urls = response.css('.lpPLink::attr(href)').getall()
+        for product_url in product_urls:
+            yield scrapy.Request(response.urljoin(product_url), self.parse_product)
+
+        variety_urls = response.css('.elementContent a::attr(href)').getall()
+        for variety_url in variety_urls:
+            yield scrapy.Request(response.urljoin(variety_url))
+
+        # TODO: mêmes opérations que précédemment, seule la classe change
+        variety_urls = response.css('.elementTitle a::attr(href)').getall()
+        for variety_url in variety_urls:
+            yield scrapy.Request(response.urljoin(variety_url))
+
+    def parse_product(self, response):
+        """
+        Analysis of the product page.
+        """
+        item = ProductItem()
+        item['url'] = response.url
+        item['vendor'] = parse_url(response.url).netloc
+
+        item['product_name'] = response.css('h1::text').get()
+        item['density'] = response.css('#description strong::text').get()
+        item['available'] = not response.css('.msgSoldOut')
+
+
+        for selector in response.css('.fpBktParam'):
+            item['raw_string'] = selector.css('span::text').get()
+            item['price'] = selector.css('div::text').getall()[1]
+            yield item

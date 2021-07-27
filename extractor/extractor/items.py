@@ -19,7 +19,8 @@ class ProductItem(scrapy.Item):
     published = scrapy.Field()
     last_modified = scrapy.Field()
     product_id = scrapy.Field()
-    promotion = scrapy.Field()
-    available = scrapy.Field()
+    promotion = scrapy.Field()  # bool
+    available = scrapy.Field()  # bool
+    density = scrapy.Field()
 
     raw_string = scrapy.Field()

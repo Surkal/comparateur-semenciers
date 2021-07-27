@@ -7,6 +7,8 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+
+
 BOT_NAME = 'extractor'
 
 SPIDER_MODULES = ['extractor.spiders']
@@ -67,6 +69,7 @@ ROBOTSTXT_OBEY = True
 ITEM_PIPELINES = {
     'extractor.pipelines.BoiteAGrainesPipeline': 300,
     'extractor.pipelines.KokopelliPipeline': 301,
+    'extractor.pipelines.BiaugermePipeline': 302,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
