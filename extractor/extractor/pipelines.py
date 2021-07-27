@@ -4,6 +4,8 @@ from w3lib.html import remove_tags
 from scrapy.utils.url import parse_url
 from scrapy.exceptions import DropItem
 
+from .settings import FORBIDDEN_PRODUCTS
+
 
 class DefaultValuesPipeline:
     def process_item(self, item, spider):
@@ -18,7 +20,20 @@ class FilterPipeline:
     def process_item(self, item, spider):
         if not item.get('price'):
             raise DropItem
+        self.filter_product_name(item['product_name'])
         return item
+
+    def filter_product_name(self, product_name):
+        """
+        Exclude products whose name matches one of the regular
+        expressions defined in the constant FORBIDDEN_PRODUCTS
+        in settings.
+        """
+        regex = '|'.join(FORBIDDEN_PRODUCTS)
+        pattern = re.compile(rf'(?:{regex})', re.IGNORECASE)
+        if re.search(pattern, product_name):
+            raise DropItem
+
 
 class BoiteAGrainesPipeline:
     def process_item(self, item, spider):
