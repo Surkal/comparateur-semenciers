@@ -5,10 +5,17 @@ from scrapy.utils.url import parse_url
 from scrapy.exceptions import DropItem
 
 
+class DefaultValuesPipeline:
+    def process_item(self, item, spider):
+        item.setdefault('currency', 'EUR')
+        item.setdefault('available', True)
+        item.setdefault('promotion', False)
+        item.setdefault('weight', 0)
+        item.setdefault('seed_number', 0)
+        return item
+
 class FilterPipeline:
     def process_item(self, item, spider):
-        item['weight'] = item.get('weight', 0)
-        item['seed_number'] = item.get('seed_number', 0)
         if not item.get('price'):
             raise DropItem
         return item

@@ -67,6 +67,8 @@ ROBOTSTXT_OBEY = True
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
+    'extractor.pipelines.FilterPipeline': 50,
+    'extractor.pipelines.DefaultValuesPipeline': 100,
     'extractor.pipelines.BoiteAGrainesPipeline': 300,
     'extractor.pipelines.KokopelliPipeline': 301,
     'extractor.pipelines.BiaugermePipeline': 302,
