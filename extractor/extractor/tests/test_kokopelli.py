@@ -16,7 +16,7 @@ def test_description_parsing(description_array, description):
 @pytest.mark.parametrize(
     'string,value',
     [
-        (['one', 'Contenance du Sachet : 35 graines', '42 graines'], 35.0),
+        (['one', 'Contenance du Sachet : 35 graines', '42 graines'], '35'),
         (['one', 'Contenance du Sachet : 35 grammes', '42 grammes'], 0.0),
     ]
 )
@@ -28,7 +28,7 @@ def test_get_seed_number(string, value):
     'string,value',
     [
         (['one', 'Contenance du Sachet : 35 graines', '42 graines'], 0.0),
-        (['one', 'Contenance du Sachet : 35 grammes', '42 grammes'], 35.0),
+        (['one', 'Contenance du Sachet : 35 grammes', '42 grammes'], '35'),
     ]
 )
 def test_get_weight(string, value):
