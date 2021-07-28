@@ -1,3 +1,5 @@
+import re
+
 import scrapy
 from scrapy.utils.url import parse_url
 
@@ -116,3 +118,41 @@ class BiaugermeSpider(scrapy.Spider):
             item['raw_string'] = selector.css('span::text').get()
             item['price'] = selector.css('div::text').getall()[1]
             yield item
+
+    
+class FermedemaintemartheSpider(scrapy.Spider):
+    name = 'fermedesaintmarthe'
+    start_urls = [
+        'https://www.fermedesaintemarthe.com/CT-3146-graines-potageres.aspx',
+        'https://www.fermedesaintemarthe.com/CT-3172-graines-d-aromatiques-et-medicinales.aspx',
+        'https://www.fermedesaintemarthe.com/CT-2001-graines-de-fleurs.aspx',
+        'https://www.fermedesaintemarthe.com/CT-3194-pommes-de-terre.aspx',
+    ]
+
+    def parse(self, response):
+        product_urls = response.css('.item .name a::attr(href)').getall()
+        for product_url in product_urls:
+            yield scrapy.Request(response.urljoin(product_url), self.parse_product)
+        next_page_url = response.css('.LinkNext a::attr(href)').get()
+        if next_page_url is not None:
+            yield scrapy.Request(response.urljoin(next_page_url))
+
+    def parse_product(self, response):
+        """
+        Analysis of the product page.
+        """
+        item = ProductItem()
+        item['url'] = response.url
+        item['vendor'] = parse_url(response.url).netloc
+
+        item['product_name'] = response.css('.pageTitle span::text').get()
+        item['available'] = not response.css('.dispo')
+        item['promotion'] = not not response.css('.old')
+        if item['promotion']:
+            item['old_price'] = response.css('.old .amount::text').get()
+
+        item['price'] = response.css('.new .amount::text').get()
+        # Un tableau
+        item['raw_string'] = response.css('.featureTable tr td::text').getall()
+                    
+        return item

@@ -72,6 +72,8 @@ ITEM_PIPELINES = {
     'extractor.pipelines.BoiteAGrainesPipeline': 300,
     'extractor.pipelines.KokopelliPipeline': 301,
     'extractor.pipelines.BiaugermePipeline': 302,
+    'extractor.pipelines.FermedesaintmarthePipeline': 303,
+    'extractor.pipelines.FormattingPipeline': 800,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -96,4 +98,4 @@ AUTOTHROTTLE_ENABLED = True
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 # Product names matching one of these regular expressions will be dropped
-FORBIDDEN_PRODUCTS = ['m[eé]langes?', 'assortiments?']
+FORBIDDEN_PRODUCTS = ['m[eé]langes?', 'assortiments?', '\s+et\s+', 'stockage']

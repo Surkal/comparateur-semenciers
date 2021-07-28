@@ -15,6 +15,9 @@ from extractor.settings import FORBIDDEN_PRODUCTS
         ('assortiment de fleurs', True),
         ('tomate', False),
         ('tomate jaune', False),
+        # ... et ...
+        ('betteraves', False),
+        ('Carottes et radis', True),
     ]
 )
 def test_filter_product(product_name, result):

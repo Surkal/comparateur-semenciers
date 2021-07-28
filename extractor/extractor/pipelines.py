@@ -7,13 +7,20 @@ from scrapy.exceptions import DropItem
 from .settings import FORBIDDEN_PRODUCTS
 
 
+# TODO: fonction `process_items()` : item[key] = fn(item[key])
+
+
 class DefaultValuesPipeline:
+    """
+    Defines the default values of the "item" dictionary.
+    """
     def process_item(self, item, spider):
         item.setdefault('currency', 'EUR')
         item.setdefault('available', True)
         item.setdefault('promotion', False)
         item.setdefault('weight', 0)
         item.setdefault('seed_number', 0)
+        item.setdefault('old_price', item['price'])  # TODO: à mettre dans un dernier pipeline ?
         return item
 
 class FilterPipeline:
@@ -132,3 +139,75 @@ class BiaugermePipeline:
     def price_parser(self, price):
         price = re.search(r'([\d\.]+)\s*€', price).group(1)
         return float(price)
+
+
+class FermedesaintmarthePipeline:
+    def process_item(self, item, spider):
+        if not item['vendor'].endswith('fermedesaintemarthe.com'):
+            return item
+
+        item['product_name'] = self.product_name_parser(item['product_name'])
+        item['price'] = self.parse_price(item['price'])
+        item['old_price'] = self.parse_price(item['old_price'])
+        item = self.get_quantity(item)
+        return item
+
+    def parse_price(self, price):
+        price = price.replace(',', '.')  #TODO: ligne inutile mais pour une future factorisation
+        return float(price)
+
+    def product_name_parser(self, product_name):
+        unwanted_strings = (
+            '\s+nt',
+            '\s+ab',
+            '\s+-',
+            '\(\d+ bulbilles?\)',
+            '\s+bio'
+        )
+        for string in unwanted_strings:
+            string += '(?:\s+|$)'
+            regex = re.compile(string, re.IGNORECASE)
+            if re.search(regex, product_name):
+                product_name = re.sub(regex, '', product_name)
+                product_name = product_name.strip()
+                product_name = self.product_name_parser(product_name)
+        return product_name
+
+    def get_quantity(self, item):
+        array = item['raw_string']
+        patterns = {
+            'gramme': 'weight',
+            'graine': 'seed_number',
+            'plant': 'seed_number',
+            'bulbe': 'seed_number',
+            'tubercule': 'seed_number'
+        }
+        for string in array:
+            for pattern, quantity in patterns.items():
+                regex = re.compile(f'(\d+)\s{pattern}', re.IGNORECASE)
+                if not re.search(regex, string):
+                    continue
+                match = re.search(regex, string)
+                item[quantity] = match.group(1)
+                del item['raw_string']
+                return item
+        raise DropItem
+        
+
+
+class FormattingPipeline:
+    def process_item(self, item, spider):
+        item['product_name'] = self.case_fix(item['product_name'])
+        return item
+
+    def case_fix(self, string):
+        """
+        Capitalize a string if it is only composed of uppercase
+        or only lowercase letters.
+        """
+        compact_string = re.sub(r'[^A-Za-z]', '', string)
+        if all(letter.isupper() for letter in compact_string):
+            return string.capitalize()
+        if all(letter.islower() for letter in compact_string):
+            return string.capitalize()
+        return string

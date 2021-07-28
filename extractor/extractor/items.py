@@ -12,8 +12,9 @@ class ProductItem(scrapy.Item):
     latin_name = scrapy.Field()
     product_name = scrapy.Field()
     price = scrapy.Field()
+    old_price = scrapy.Field()  # old price indicated during promotions
     currency = scrapy.Field()
-    weight = scrapy.Field()
+    weight = scrapy.Field()  # in grams
     seed_number = scrapy.Field()
     description = scrapy.Field()
     published = scrapy.Field()
