@@ -18,9 +18,9 @@ class DefaultValuesPipeline:
         item.setdefault('currency', 'EUR')
         item.setdefault('available', True)
         item.setdefault('promotion', False)
-        item.setdefault('weight', 0)
-        item.setdefault('seed_number', 0)
-        item.setdefault('old_price', item['price'])  # TODO: à mettre dans un dernier pipeline ?
+        item.setdefault('weight', 0.)
+        item.setdefault('seed_number', 0.)
+        item.setdefault('density', 0.)
         return item
 
 class FilterPipeline:
@@ -46,7 +46,6 @@ class BoiteAGrainesPipeline:
     def process_item(self, item, spider):
         if not item['vendor'].endswith('laboiteagraines.com'):
             return item
-        item['price'] = self.parse_price(item['price'])
         item['product_name'] = self.parse_name(item['product_name'])
         item['description'] = remove_tags(item['description']).strip()  # laboiteagraines.com
         item['weight'] = self.get_weight(item['description'])
@@ -58,25 +57,19 @@ class BoiteAGrainesPipeline:
         pattern = re.compile(r'\s*bio(\s.*)?$', re.IGNORECASE)  # se termine parfois par "bio" ou "BIO", parfois " BIO - ..."
         return re.sub(pattern, '', name)
 
-    def parse_price(self, price):
-        price = price.replace(',', '.')
-        return float(price)
-
     def get_seed_number(self, description):
         pattern = re.compile(r'([\d\,\.]+)\s*(?:graines|tubercule)', re.IGNORECASE)
         match = re.search(pattern, description)
         if not match:
-            return 0
-        number = match.group(1).replace(',', '.')  # TODO: même fonction que self.parse_price()
-        return float(number)
+            return 0.
+        return match.group(1)
 
     def get_weight(self, description):
         pattern = re.compile(r'\([^\d]*([\d\,\.]+)\s*gramme', re.IGNORECASE)  # laboiteagrainescom
         match = re.search(pattern, description)
         if not match:
-            return 0
-        weight = match.group(1).replace(',', '.')  # TODO: même fonction que self.parse_price()
-        return float(weight)
+            return 0.
+        return match.group(1)
 
 
 class KokopelliPipeline:
@@ -93,14 +86,14 @@ class KokopelliPipeline:
     def get_seed_number(self, string):
         for s in string:
             if re.search(r'(\d+)\sgraines?', s):
-                return float(re.search(r'(\d+)\sgraines?', s).group(1))
-        return 0.0
+                return re.search(r'(\d+)\sgraines?', s).group(1)
+        return 0.
 
     def get_weight(self, string):
         for s in string:
             if re.search(r'(\d+)\sgrammes?', s):
-                return float(re.search(r'(\d+)\sgrammes?', s).group(1))
-        return 0.0
+                return re.search(r'(\d+)\sgrammes?', s).group(1)
+        return 0.
 
     def parse_description(self, description):
         return '\n'.join(description)
@@ -115,30 +108,24 @@ class BiaugermePipeline:
         item['weight'] = self.weight_parser(item['raw_string'])
         del item['raw_string']
 
-        item['density'] = self.get_density(item['density'])
         item['price'] = self.price_parser(item['price'])
         return item
-
-    def get_density(self, density):
-        if not density:
-            return 0
-        return int(density)
 
     def seed_number_parser(self, quantity):
         match = re.search(r'(\d+)\s*grn', quantity)
         if not match:
             return 0.
-        return float(match.group(1))
+        return match.group(1)
 
     def weight_parser(self, quantity):
         match = re.search(r'(\d+)\s*g(?:[^r]|$)', quantity)
         if not match:
             return 0.
-        return float(match.group(1))
+        return match.group(1)
 
     def price_parser(self, price):
         price = re.search(r'([\d\.]+)\s*€', price).group(1)
-        return float(price)
+        return price
 
 
 class FermedesaintmarthePipeline:
@@ -147,14 +134,11 @@ class FermedesaintmarthePipeline:
             return item
 
         item['product_name'] = self.product_name_parser(item['product_name'])
-        item['price'] = self.parse_price(item['price'])
-        item['old_price'] = self.parse_price(item['old_price'])
+        #item['price'] = self.parse_price(item['price'])
+        #if item.get('old_price'):
+            #item['old_price'] = self.parse_price(item['old_price'])
         item = self.get_quantity(item)
         return item
-
-    def parse_price(self, price):
-        price = price.replace(',', '.')  #TODO: ligne inutile mais pour une future factorisation
-        return float(price)
 
     def product_name_parser(self, product_name):
         unwanted_strings = (
@@ -197,7 +181,14 @@ class FermedesaintmarthePipeline:
 
 class FormattingPipeline:
     def process_item(self, item, spider):
+        item.setdefault('old_price', item['price']) 
         item['product_name'] = self.case_fix(item['product_name'])
+
+        item['price'] = self.to_float(item['price'])
+        item['old_price'] = self.to_float(item['old_price'])
+        item['weight'] = self.to_float(item['weight'])
+        item['seed_number'] = self.to_float(item['seed_number'])
+        item['density'] = self.to_float(item['density'])
         return item
 
     def case_fix(self, string):
@@ -211,3 +202,9 @@ class FormattingPipeline:
         if all(letter.islower() for letter in compact_string):
             return string.capitalize()
         return string
+
+    def to_float(self, string):
+        if not isinstance(string, str):
+            return string
+        string = string.replace(',', '.')
+        return float(string)

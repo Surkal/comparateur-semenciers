@@ -7,7 +7,7 @@ from ..items import ProductItem
 
 
 class BoiteAGrainesSpider(scrapy.Spider):
-    name = 'boite-a-graines'
+    name = 'boiteagraines'
     start_urls = [
         'https://laboiteagraines.com/categorie-produit/2-graines-semences-graine-semence-potageres-legumes/15-graines-legumes-feuille/',
         'https://laboiteagraines.com/categorie-produit/2-graines-semences-graine-semence-potageres-legumes/',
@@ -18,6 +18,7 @@ class BoiteAGrainesSpider(scrapy.Spider):
     ]
 
     def parse(self, response):
+        """Process the downloaded response."""
         product_urls = response.css('.product-details > a::attr(href)').getall()
         for product_url in product_urls:
             yield scrapy.Request(response.urljoin(product_url), self.parse_product)
@@ -26,9 +27,7 @@ class BoiteAGrainesSpider(scrapy.Spider):
             yield scrapy.Request(response.urljoin(next_page_url))
 
     def parse_product(self, response):
-        """
-        Analysis of the product page.
-        """
+        """Analysis of the product page."""
         item = ProductItem()
         item['url'] = response.url
         item['vendor'] = parse_url(response.url).netloc
@@ -50,6 +49,7 @@ class KokopelliSpider(scrapy.Spider):
     start_urls = ['https://kokopelli-semences.fr/fr/c/semences']
 
     def parse(self, response):
+        """Process the downloaded response."""
         product_urls = response.css('.product__title > a::attr(href)').getall()
         for product_url in product_urls:
             yield scrapy.Request(response.urljoin(product_url), self.parse_product)
@@ -58,9 +58,7 @@ class KokopelliSpider(scrapy.Spider):
             yield scrapy.Request(response.urljoin(next_page_url))
         
     def parse_product(self, response):
-        """
-        Analysis of the product page.
-        """
+        """Analysis of the product page."""
         item = ProductItem()
         item['url'] = response.url
         item['vendor'] = parse_url(response.url).netloc
@@ -88,6 +86,7 @@ class BiaugermeSpider(scrapy.Spider):
     ]
 
     def parse(self, response):
+        """Process the downloaded response."""
         product_urls = response.css('.lpPLink::attr(href)').getall()
         for product_url in product_urls:
             yield scrapy.Request(response.urljoin(product_url), self.parse_product)
@@ -102,9 +101,7 @@ class BiaugermeSpider(scrapy.Spider):
             yield scrapy.Request(response.urljoin(variety_url))
 
     def parse_product(self, response):
-        """
-        Analysis of the product page.
-        """
+        """Analysis of the product page."""
         item = ProductItem()
         item['url'] = response.url
         item['vendor'] = parse_url(response.url).netloc
@@ -130,6 +127,7 @@ class FermedemaintemartheSpider(scrapy.Spider):
     ]
 
     def parse(self, response):
+        """Process the downloaded response."""
         product_urls = response.css('.item .name a::attr(href)').getall()
         for product_url in product_urls:
             yield scrapy.Request(response.urljoin(product_url), self.parse_product)
@@ -138,9 +136,7 @@ class FermedemaintemartheSpider(scrapy.Spider):
             yield scrapy.Request(response.urljoin(next_page_url))
 
     def parse_product(self, response):
-        """
-        Analysis of the product page.
-        """
+        """Analysis of the product page."""
         item = ProductItem()
         item['url'] = response.url
         item['vendor'] = parse_url(response.url).netloc

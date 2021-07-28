@@ -23,6 +23,8 @@ USER_AGENT = '	Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gec
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
 
+LOG_LEVEL = 'ERROR'
+
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
 
