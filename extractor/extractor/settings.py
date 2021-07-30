@@ -23,7 +23,7 @@ USER_AGENT = '	Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gec
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
 
-LOG_LEVEL = 'ERROR'
+LOG_LEVEL = 'WARNING'
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
@@ -75,6 +75,7 @@ ITEM_PIPELINES = {
     'extractor.pipelines.KokopelliPipeline': 301,
     'extractor.pipelines.BiaugermePipeline': 302,
     'extractor.pipelines.FermedesaintmarthePipeline': 303,
+    'extractor.pipelines.ComptoirdesgrainesPipeline': 304,
     'extractor.pipelines.FormattingPipeline': 800,
 }
 

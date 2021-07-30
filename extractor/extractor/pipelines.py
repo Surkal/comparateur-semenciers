@@ -26,7 +26,7 @@ class DefaultValuesPipeline:
 class FilterPipeline:
     def process_item(self, item, spider):
         if not item.get('price'):
-            raise DropItem
+            raise DropItem('Price required')
         self.filter_product_name(item['product_name'])
         return item
 
@@ -39,7 +39,7 @@ class FilterPipeline:
         regex = '|'.join(FORBIDDEN_PRODUCTS)
         pattern = re.compile(rf'(?:{regex})', re.IGNORECASE)
         if re.search(pattern, product_name):
-            raise DropItem
+            raise DropItem('Product name unknown')
 
 
 class BoiteAGrainesPipeline:
@@ -79,8 +79,6 @@ class KokopelliPipeline:
         item['seed_number'] = self.get_seed_number(item['raw_string'])
         item['weight'] = self.get_weight(item['raw_string'])
         item['description'] = self.parse_description(item['description'])
-
-        del item['raw_string']
         return item
 
     def get_seed_number(self, string):
@@ -106,7 +104,6 @@ class BiaugermePipeline:
 
         item['seed_number'] = self.seed_number_parser(item['raw_string'])
         item['weight'] = self.weight_parser(item['raw_string'])
-        del item['raw_string']
 
         item['price'] = self.price_parser(item['price'])
         return item
@@ -141,6 +138,9 @@ class FermedesaintmarthePipeline:
         return item
 
     def product_name_parser(self, product_name):
+        """
+        Removes unwanted chars at the end of product_name.
+        """
         unwanted_strings = (
             '\s+nt',
             '\s+ab',
@@ -173,10 +173,74 @@ class FermedesaintmarthePipeline:
                     continue
                 match = re.search(regex, string)
                 item[quantity] = match.group(1)
-                del item['raw_string']
                 return item
-        raise DropItem
+        raise DropItem('Quantity unknown')
+
+
+class ComptoirdesgrainesPipeline:
+    def process_item(self, item, spider):
+        if not item['vendor'].endswith('comptoir-des-graines.fr'):
+            return item
         
+        item['product_name'] = self.product_name_parser(item['product_name'])
+        item['product_name'] = self.product_name_parser2(item['product_name'])
+        item['seed_number'] = self.get_quantity(item)
+        return item
+
+    def product_name_parser(self, product_name):
+        """
+        Sometimes, product names of this shop start with "Graines de".
+        It must be removed.
+        """
+        return re.sub(r'[gG]raines?\sde\s+', '', product_name)
+
+    def get_seed_number(self, string):
+        # TODO: useless
+        match = re.search(r'(\d+)\sgraines?', string)
+        if match:
+            string = match.group(1)
+        return string
+
+    def product_name_parser2(self, product_name):
+        # TODO: duplicata
+        """
+        Removes unwanted chars at the end of product_name.
+        """
+        unwanted_strings = (
+            '\s+nt',
+            '\s+ab',
+            '\s+-',
+            '\(\d+ bulbilles?\)',
+            '\s+bio'
+        )
+        for string in unwanted_strings:
+            string += '(?:\s+|$)'
+            regex = re.compile(string, re.IGNORECASE)
+            if re.search(regex, product_name):
+                product_name = re.sub(regex, '', product_name)
+                product_name = product_name.strip()
+                product_name = self.product_name_parser(product_name)
+        return product_name
+
+    def get_quantity(self, item):
+        # TODO: duplicata
+        array = item['raw_string']
+        patterns = {
+            'gramme': 'weight',
+            'graine': 'seed_number',
+            'plant': 'seed_number',
+            'bulbe': 'seed_number',
+            'tubercule': 'seed_number'
+        }
+        for string in array:
+            for pattern, quantity in patterns.items():
+                regex = re.compile(f'(\d+)\s{pattern}', re.IGNORECASE)
+                if not re.search(regex, string):
+                    continue
+                match = re.search(regex, string)
+                item[quantity] = match.group(1)
+                return item
+        raise DropItem('Quantity unknown')
 
 
 class FormattingPipeline:
@@ -189,6 +253,8 @@ class FormattingPipeline:
         item['weight'] = self.to_float(item['weight'])
         item['seed_number'] = self.to_float(item['seed_number'])
         item['density'] = self.to_float(item['density'])
+        if item.get('raw_string'):
+            del item['raw_string']
         return item
 
     def case_fix(self, string):
