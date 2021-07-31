@@ -163,12 +163,11 @@ class ComptoirdesgrainesSpider(scrapy.Spider):
         # links in the navbar
         categories = response.css('.sub a::attr(href)').getall()
         for categorie in categories:
-            yield scrapy.Request(response.urljoin(categorie), self.parse_category)
-
-    def parse_category(self, response):
+            yield scrapy.Request(response.urljoin(categorie))
+        
         next_page_url = response.css('.pagination_next a::attr(href)').get()
         if next_page_url is not None:
-            yield scrapy.Request(response.urljoin(next_page_url), self.parse_category)
+            yield scrapy.Request(response.urljoin(next_page_url))
             
         product_urls = response.css('.product-name::attr(href)').getall()
         for product_url in product_urls:
