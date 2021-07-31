@@ -182,7 +182,7 @@ class ComptoirdesgrainesSpider(scrapy.Spider):
 
         
         data = response.css('script[type~="application/ld+json"]::text').get()
-        # Remove indent
+        # Removes indent
         data = re.sub(r'[\n\t]', '', data)
         data = eval(data)
         
@@ -192,7 +192,7 @@ class ComptoirdesgrainesSpider(scrapy.Spider):
         item['product_id'] = data['productID']
         
         # seed number
-        item['raw_string'] = response.css('.seed-number::text').get().strip()  # TODO: raise RecursionError
+        item['raw_string'] = response.css('.seed-number::text').get().strip()
 
         return item
         

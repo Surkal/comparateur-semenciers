@@ -234,7 +234,7 @@ class ComptoirdesgrainesPipeline:
             'tubercule': 'seed_number'
         }
         for pattern, quantity in patterns.items():
-            regex = re.compile(f'(\d+)\s{pattern}', re.IGNORECASE)
+            regex = re.compile(f'((?:\d+[\.\,])?\d+)\s{pattern}', re.IGNORECASE)
             if not re.search(regex, string):
                 continue
             match = re.search(regex, string)
