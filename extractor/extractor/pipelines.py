@@ -233,13 +233,13 @@ class ComptoirdesgrainesPipeline:
             'bulbe': 'seed_number',
             'tubercule': 'seed_number'
         }
-        for pattern, quantity in patterns.items():
-            regex = re.compile(f'((?:\d+[\.\,])?\d+)\s{pattern}', re.IGNORECASE)
-            if not re.search(regex, string):
-                continue
-            match = re.search(regex, string)
-            item[quantity] = match.group(1)
-            return item
+        regex = re.compile(
+            f"((?:\d+[\.\,])?\d+)\s({'|'.join(patterns.keys())})",
+            re.IGNORECASE
+        )
+        match = re.search(regex, string)
+        if match:
+            item[patterns[match.group(2)]] = match.group(1)
         return item
 
 
