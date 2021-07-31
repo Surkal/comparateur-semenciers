@@ -184,7 +184,7 @@ class ComptoirdesgrainesPipeline:
         
         item['product_name'] = self.product_name_parser(item['product_name'])
         item['product_name'] = self.product_name_parser2(item['product_name'])
-        item['seed_number'] = self.get_quantity(item)
+        item = self.get_quantity(item)
         return item
 
     def product_name_parser(self, product_name):
@@ -223,8 +223,9 @@ class ComptoirdesgrainesPipeline:
         return product_name
 
     def get_quantity(self, item):
-        # TODO: duplicata
-        array = item['raw_string']
+        # TODO: duplicata of FermedesaintmarthePipeline.get_quantity()
+        # adapted to string input
+        string = item['raw_string']
         patterns = {
             'gramme': 'weight',
             'graine': 'seed_number',
@@ -232,15 +233,14 @@ class ComptoirdesgrainesPipeline:
             'bulbe': 'seed_number',
             'tubercule': 'seed_number'
         }
-        for string in array:
-            for pattern, quantity in patterns.items():
-                regex = re.compile(f'(\d+)\s{pattern}', re.IGNORECASE)
-                if not re.search(regex, string):
-                    continue
-                match = re.search(regex, string)
-                item[quantity] = match.group(1)
-                return item
-        raise DropItem('Quantity unknown')
+        for pattern, quantity in patterns.items():
+            regex = re.compile(f'(\d+)\s{pattern}', re.IGNORECASE)
+            if not re.search(regex, string):
+                continue
+            match = re.search(regex, string)
+            item[quantity] = match.group(1)
+            return item
+        return item
 
 
 class FormattingPipeline:

@@ -159,19 +159,20 @@ class ComptoirdesgrainesSpider(scrapy.Spider):
     start_urls = ['https://www.comptoir-des-graines.fr/fr/']
 
     def parse(self, response):
-        """Process the downloaded response."""
-        product_urls = response.css('.product-name::attr(href)').getall()
-        for product_url in product_urls:
-            yield scrapy.Request(response.urljoin(product_url), self.parse_product)
-
-        next_page_url = response.css('.pagination_next a::attr(href)').get()
-        if next_page_url is not None:
-            yield scrapy.Request(response.urljoin(next_page_url))
-        
+        """Process the downloaded response.""" 
         # links in the navbar
         categories = response.css('.sub a::attr(href)').getall()
         for categorie in categories:
-            yield scrapy.Request(response.urljoin(categorie))
+            yield scrapy.Request(response.urljoin(categorie), self.parse_category)
+
+    def parse_category(self, response):
+        next_page_url = response.css('.pagination_next a::attr(href)').get()
+        if next_page_url is not None:
+            yield scrapy.Request(response.urljoin(next_page_url), self.parse_category)
+            
+        product_urls = response.css('.product-name::attr(href)').getall()
+        for product_url in product_urls:
+            yield scrapy.Request(response.urljoin(product_url), self.parse_product)
 
     def parse_product(self, response):
         """Analysis of the product page."""
@@ -179,18 +180,19 @@ class ComptoirdesgrainesSpider(scrapy.Spider):
         item['url'] = response.url
         item['vendor'] = parse_url(response.url).netloc
 
+        
         data = response.css('script[type~="application/ld+json"]::text').get()
         # Remove indent
         data = re.sub(r'[\n\t]', '', data)
         data = eval(data)
-
+        
         item['product_name'] = data['name']
         item['price'] = data['offers']['price']
         item['currency'] = data['offers']['priceCurrency']
         item['product_id'] = data['productID']
-
+        
         # seed number
-        item['raw_string'] = response.css('.seed-number::text').get()
+        item['raw_string'] = response.css('.seed-number::text').get().strip()  # TODO: raise RecursionError
 
         return item
         
