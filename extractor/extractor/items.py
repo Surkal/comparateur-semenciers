@@ -23,5 +23,6 @@ class ProductItem(scrapy.Item):
     promotion = scrapy.Field()  # bool
     available = scrapy.Field()  # bool
     density = scrapy.Field()
+    timestamp = scrapy.Field()
 
     raw_string = scrapy.Field()

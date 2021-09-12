@@ -1,4 +1,5 @@
 import re
+import time
 
 from w3lib.html import remove_tags
 from scrapy.utils.url import parse_url
@@ -21,6 +22,7 @@ class DefaultValuesPipeline:
         item.setdefault('weight', 0.)
         item.setdefault('seed_number', 0.)
         item.setdefault('density', 0.)
+        item.setdefault('timestamp', int(time.time()))
         return item
 
 class FilterPipeline:

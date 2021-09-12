@@ -23,7 +23,7 @@ USER_AGENT = '	Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gec
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
 
-LOG_LEVEL = 'DEBUG'
+LOG_LEVEL = 'INFO'
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
@@ -105,4 +105,4 @@ AUTOTHROTTLE_ENABLED = True
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 # Product names matching one of these regular expressions will be dropped
-FORBIDDEN_PRODUCTS = ['m[eé]langes?', 'assortiments?', '\s+et\s+', 'stockage']
+FORBIDDEN_PRODUCTS = [r'm[eé]langes?', r'assortiments?', r'\s+et\s+', r'stockage']
