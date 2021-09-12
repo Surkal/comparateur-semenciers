@@ -13,6 +13,8 @@ from extractor.pipelines import BoiteAGrainesPipeline
         ('tomate bio ', 'tomate'),
         (' tomate BIO ', 'tomate'),
         ('tomate', 'tomate'),
+        ('tomate bio orange', 'tomate bio orange'),
+        ('tomatebio orange', 'tomatebio orange')
     ]
 )
 def test_product_name_parsing(input, output):

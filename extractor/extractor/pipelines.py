@@ -54,7 +54,7 @@ class BoiteAGrainesPipeline:
 
     def parse_name(self, name):
         name = name.strip()
-        pattern = re.compile(r'\s*bio(\s.*)?$', re.IGNORECASE)  # se termine parfois par "bio" ou "BIO", parfois " BIO - ..."
+        pattern = re.compile(r'\s+bio\s*$', re.IGNORECASE)  # se termine parfois par "bio" ou "BIO", parfois " BIO - ..."
         return re.sub(pattern, '', name)
 
     def get_seed_number(self, description):
@@ -142,14 +142,14 @@ class FermedesaintmarthePipeline:
         Removes unwanted chars at the end of product_name.
         """
         unwanted_strings = (
-            '\s+nt',
-            '\s+ab',
-            '\s+-',
-            '\(\d+ bulbilles?\)',
-            '\s+bio'
+            r'\s+nt',
+            r'\s+ab',
+            r'\s+-',
+            r'\(\d+ bulbilles?\)',
+            r'\s+bio'
         )
         for string in unwanted_strings:
-            string += '(?:\s+|$)'
+            string += r'(?:\s+|$)'
             regex = re.compile(string, re.IGNORECASE)
             if re.search(regex, product_name):
                 product_name = re.sub(regex, '', product_name)
@@ -168,7 +168,7 @@ class FermedesaintmarthePipeline:
         }
         for string in array:
             for pattern, quantity in patterns.items():
-                regex = re.compile(f'(\d+)\s{pattern}', re.IGNORECASE)
+                regex = re.compile(rf'(\d+)\s{pattern}', re.IGNORECASE)
                 if not re.search(regex, string):
                     continue
                 match = re.search(regex, string)
@@ -207,14 +207,14 @@ class ComptoirdesgrainesPipeline:
         Removes unwanted chars at the end of product_name.
         """
         unwanted_strings = (
-            '\s+nt',
-            '\s+ab',
-            '\s+-',
-            '\(\d+ bulbilles?\)',
-            '\s+bio'
+            r'\s+nt',
+            r'\s+ab',
+            r'\s+-',
+            r'\(\d+ bulbilles?\)',
+            r'\s+bio'
         )
         for string in unwanted_strings:
-            string += '(?:\s+|$)'
+            string += r'(?:\s+|$)'
             regex = re.compile(string, re.IGNORECASE)
             if re.search(regex, product_name):
                 product_name = re.sub(regex, '', product_name)
@@ -234,13 +234,76 @@ class ComptoirdesgrainesPipeline:
             'tubercule': 'seed_number'
         }
         regex = re.compile(
-            f"((?:\d+[\.\,])?\d+)\s({'|'.join(patterns.keys())})",
+            rf"((?:\d+[\.\,])?\d+)\s({'|'.join(patterns.keys())})",
             re.IGNORECASE
         )
         match = re.search(regex, string)
         if match:
             item[patterns[match.group(2)]] = match.group(1)
         return item
+
+
+class GrainesdeFoliePipeline:
+    def process_item(self, item, spider):
+        if not item['vendor'].endswith('grainesdefolie.com'):
+            return item
+
+        item['product_name'] = self.parse_name(item['product_name'])
+
+        return item
+
+    def parse_name(self, name):
+        name = name.strip()
+        pattern = re.compile(r'^\s*bio\s+', re.IGNORECASE)  # se termine parfois par "bio" ou "BIO", parfois " BIO - ..."
+        return re.sub(pattern, '', name)
+
+
+
+class SanRivalPipeline:
+    def process_item(self, item, spider):
+        if not item['vendor'].endswith('sanrivaljardin.com'):
+            return item
+
+        item['seed_number'] = self.get_seed_number(item['raw_string'])
+        item['weight'] = self.get_weight(item['raw_string'])
+
+        return item
+
+    def get_seed_number(self, string):
+        # quasi même fonction que kokopelli
+        if re.search(r'(\d+)\sgraines?', string):
+            return re.search(r'(\d+)\sgraines?', string).group(1)
+        return 0.
+
+    def get_weight(self, string):
+        # même pattern que laboiteagraines sans la parenthèse du début
+        pattern = r'[^\d]*([\d\,\.]+)\s*gramme'
+        if re.search(pattern, string):
+            return re.search(pattern, string).group(1)
+        return 0.
+
+
+class GrainesdelPaisPipeline:
+    def process_item(self, item, spider):
+        if not item['vendor'].endswith('grainesdelpais.com'):
+            return item
+
+        item['price'] = self.get_price(item['raw_string'])
+        item['weight'] = self.get_weight(item['raw_string'])
+
+        return item
+
+    def get_weight(self, string):
+        pattern = r'((?:\d+[\.\,])?\d+)\s*g'
+        if re.search(pattern, string):
+            return re.search(pattern, string).group(1)
+        return 0.
+
+    def get_price(self, string):
+        pattern = r'((?:\d+[\.\,])?\d+)\s*€'
+        if re.search(pattern, string):
+            return re.search(pattern, string).group(1)
+        return 0.
 
 
 class FormattingPipeline:

@@ -71,11 +71,15 @@ LOG_LEVEL = 'DEBUG'
 ITEM_PIPELINES = {
     'extractor.pipelines.FilterPipeline': 50,
     'extractor.pipelines.DefaultValuesPipeline': 100,
+
     'extractor.pipelines.BoiteAGrainesPipeline': 300,
     'extractor.pipelines.KokopelliPipeline': 301,
     'extractor.pipelines.BiaugermePipeline': 302,
     'extractor.pipelines.FermedesaintmarthePipeline': 303,
     'extractor.pipelines.ComptoirdesgrainesPipeline': 304,
+    'extractor.pipelines.SanRivalPipeline': 305,
+    'extractor.pipelines.GrainesdelPaisPipeline': 306,
+
     'extractor.pipelines.FormattingPipeline': 800,
 }
 

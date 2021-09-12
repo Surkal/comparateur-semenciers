@@ -155,6 +155,7 @@ class FermedemaintemartheSpider(scrapy.Spider):
 
 
 class ComptoirdesgrainesSpider(scrapy.Spider):
+    # TODO: availability
     name = 'comptoirdesgraines'
     start_urls = ['https://www.comptoir-des-graines.fr/fr/']
 
@@ -194,4 +195,154 @@ class ComptoirdesgrainesSpider(scrapy.Spider):
         item['raw_string'] = response.css('.seed-number::text').get().strip()
 
         return item
+
+
+class GrainesdefolieSpider(scrapy.Spider):
+    # not working
+    name = 'grainesdefolie'
+    start_urls = [
+        'https://www.grainesdefolie.com/102-exotiques',
+        'https://www.grainesdefolie.com/101-fleurs-fruits',
+        'https://www.grainesdefolie.com/67-aromates',
+        'https://www.grainesdefolie.com/39-potager',
+        'https://www.grainesdefolie.com/100-graines-bio',
+    ]
+
+    def parse(self, response):
+        """Process the downloaded response."""
+        pattern = r'ajax_token\s*=\s*"([^"]+)'
+        token = re.search(pattern, response.text).group(1)
+        formdata = {
+            'token': token,
+            'controller': 'product',
+            'id_customization': '0',
+            'qty': '1'
+        }
+
+        next_page_url = response.css('.next::attr(href)').get()
+        if next_page_url is not None:
+            yield scrapy.Request(response.urljoin(next_page_url))
+     
+        quantities = {}
+        product_ids = response.css('.productattributelist::attr(data-id)').getall()
+        for product_id in product_ids:
+            values = response.css(f'.productattributelist[data-id~="{product_id}"] option::attr(value)').getall()
+            quantities[product_id] = values
         
+        """
+        product_urls = response.css('.product-title a::attr(href)').getall()
+        for product_url in product_urls:
+            match = re.search(r'(\d+)-\d+', product_url)
+            if not match:
+                continue"""
+
+            #id_product = match.group(1)
+            #formdata['id_product'] = id_product
+        for id_product in quantities.keys():
+            for quantity in quantities[id_product]:
+                formdata['group[5]'] = quantity
+
+                # TODO: erreur 302
+                yield scrapy.FormRequest(
+                    'https://www.grainesdefolie.com/index.php',
+                    self.parse_product,
+                    method='POST',
+                    formdata=formdata
+                )
+
+    def parse_product(self, response):
+        """Analysis of the product page."""
+        item = ProductItem()
+        item['url'] = response.url
+        item['vendor'] = parse_url(response.url).netloc
+
+        item['product_name'] = response.css('h1::text').get()
+        item['price'] = response.css('span[itemprop~=price]::attr(content)').get()
+
+        return item
+
+
+class SanRivalSpider(scrapy.Spider):
+    name = 'sanrival'
+    start_urls = [
+        'https://sanrivaljardin.com/19-aromatiques',
+        'https://sanrivaljardin.com/10-graines-potageres',
+        'https://sanrivaljardin.com/11-graines-de-fleurs',
+        'https://sanrivaljardin.com/87-gamme-bio',
+        'https://sanrivaljardin.com/12-gamme-premium',
+        'https://sanrivaljardin.com/17-gamme-kids',
+
+    ]
+
+    def parse(self, response):
+        """Process the downloaded response."""
+        # single page
+        product_urls = response.css('.product-title > a::attr(href)').getall()
+        for product_url in product_urls:
+            yield scrapy.Request(response.urljoin(product_url), self.parse_product)
+        categorie_urls = response.css('.elementor-button ::attr(href)').getall()
+        for categorie_url in categorie_urls:
+            yield scrapy.Request(response.urljoin(categorie_url))
+
+    def parse_product(self, response):
+        """Analysis of the product page."""
+        # messy data
+        item = ProductItem()
+        item['url'] = response.url
+        item['vendor'] = parse_url(response.url).netloc
+
+        item['product_name'] = response.css('h1::text').get()
+        item['price'] = response.css('.current-price span::attr(content)').get()
+        
+        # sometimes quantity and/or seed number
+        item['raw_string'] = ' '.join(response.css('.product-information span::text').getall())
+
+        return item
+
+
+class FabreSpider(scrapy.Spider):
+    # not working
+    name = 'fabre'
+    start_urls = [
+        'https://www.fabre-graines.com/fr/graines-potageres.html',
+        'https://www.fabre-graines.com/fr/graines-de-fleurs.html',
+        'https://www.fabre-graines.com/fr/semences-fourrageres-graminees-1.html',
+        'https://www.fabre-graines.com/fr/semences-fourrageres-legumineuses-1.html'
+    ]
+
+    def parse(self, response):
+        """Process the downloaded response."""
+        product_urls = response.css('article a::attr(href)').getall()
+        for product_url in product_urls:
+            yield scrapy.Request(response.urljoin(product_url), self.parse_product)
+
+        
+class GrainesdelPaisSpider(scrapy.Spider):
+    name = 'grainesdelpais'
+    start_urls = ['https://www.grainesdelpais.com/catalogue_en_ligne_2.php']
+
+    def parse(self, response):
+        """Process the downloaded response."""
+        product_urls = response.css('.lienfiche::attr(href)').getall()
+        for product_url in product_urls:
+            yield scrapy.Request(response.urljoin(product_url), self.parse_product)
+
+        categorie_urls = response.css('.fichecontdossier a::attr(href)').getall()
+        for categorie_url in categorie_urls:
+            yield scrapy.Request(response.urljoin(categorie_url))
+
+    def parse_product(self, response):
+        """Analysis of the product page."""
+        item = ProductItem()
+        item['url'] = response.url
+        item['vendor'] = parse_url(response.url).netloc
+
+        item['product_name'] = response.css('h1::text').get()
+        item['description'] = response.css('.partiesouligne p::text').get()
+        # densité possible
+
+        # sous la forme `0.8 g - 3.40 €`
+        item['raw_string'] = response.css('.prixsachet::text').get()
+        item['price'] = -1
+
+        return item
