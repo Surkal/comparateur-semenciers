@@ -105,4 +105,4 @@ AUTOTHROTTLE_ENABLED = True
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 # Product names matching one of these regular expressions will be dropped
-FORBIDDEN_PRODUCTS = [r'm[eé]langes?', r'assortiments?', r'\s+et\s+', r'stockage']
+FORBIDDEN_PRODUCTS = [r'assortiments?', r'stockage']
