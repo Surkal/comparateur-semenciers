@@ -380,9 +380,53 @@ class GrainesBaumauxSpider(scrapy.Spider):
         item['product_name'] = response.css('h1::text').get()
         item['price'] = response.css('.current-price span::attr(content)').get()
         item['available'] = not not response.css('span.font-extra .product-available').get()
-        item['promotion'] = not not response.css('.product-discount').getall()
+        item['promotion'] = not not response.css('.product-discount').get()
+
 
         # weight e.g. : « 0,25 g. NT »
         item['raw_string'] = response.css('div[itemprop~=description]::text').get()
 
+        return item
+
+    
+class PotageEtGourmandsSpider(scrapy.Spider):
+    name = 'potageetgourmands'
+    start_urls = ['https://potage-et-gourmands.fr/shop']
+
+    def parse(self, response):
+        """Process the downloaded response."""
+        product_urls = response.css(
+            '.product > a.woocommerce-loop-product__link::attr(href)'
+        ).getall()
+        for product_url in product_urls:
+            yield scrapy.Request(response.urljoin(product_url), self.parse_product)
+
+        next_page_url = response.css('.next::attr(href)').get()
+        if next_page_url is not None:
+            yield scrapy.Request(response.urljoin(next_page_url))
+
+    def parse_product(self, response):
+        """Analysis of the product page."""
+        item = ProductItem()
+        item['url'] = response.url
+        item['vendor'] = parse_url(response.url).netloc
+
+        item['product_name'] = response.css('h1::text').get()
+        
+        item['promotion'] = not not response.css('.summary .price del')
+        if item['promotion']:
+            item['old_price'] = response.css('.summary .price del .amount::text').get()
+            item['price'] = response.css('.summary .price ins .amount::text').get()
+        else:
+            item['price'] = response.css('.summary .price .amount::text').get()
+
+        item['available'] = not not response.css('.in-stock')
+        # e.g. « 10 en stock »
+        item['stock'] = response.css('.in-stock::text').get()
+
+        # weight
+        item['raw_string'] = response.css(
+            '.woocommerce-product-details__short-description p::text'
+        ).get()
+        
         return item

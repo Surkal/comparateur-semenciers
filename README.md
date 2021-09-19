@@ -16,7 +16,7 @@ Programme en développement actif.
 
 ### Sites supportés
 
-8 sites internet sont actuellement supportés. N'hésitez pas à ouvrir une issue pour en proposer de nouveaux.
+9 sites internet sont actuellement supportés.
 
 - [biaugerme.com](https://biaugerme.com)
 - [comptoir-des-graines.fr](https://www.comptoir-des-graines.fr)
@@ -25,6 +25,7 @@ Programme en développement actif.
 - [grainesdelpais.com](https://www.grainesdelpais.com/)
 - [kokopelli-semences.fr](https://kokopelli-semences.fr)
 - [laboiteagraines.com](https://laboiteagraines.com)
+- [potage-et-gourmands.fr](https://potage-et-gourmands.fr)
 - [sanrivaljardin.com](https://sanrivaljardin.com/)
 
 ## Tests

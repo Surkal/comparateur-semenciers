@@ -22,6 +22,7 @@ class DefaultValuesPipeline:
         item.setdefault('weight', 0.)
         item.setdefault('seed_number', 0.)
         item.setdefault('density', 0.)
+        item.setdefault('stock', -1),
         item.setdefault('timestamp', int(time.time()))
         return item
 
@@ -349,6 +350,32 @@ class GrainesBaumauxPipeline:
         return ''
 
 
+class PotagerEtGourmandsPipeline:
+    def process_item(self, item, spider):
+        if not item['vendor'].endswith('potage-et-gourmands.fr'):
+            return item
+
+        item['stock'] = self.get_stock(item['stock'])
+        item['weight'] = self.get_weight(item['raw_string'])
+        return item
+
+    def get_stock(self, string):
+        if not string:
+            return 0
+        pattern = r'(\d+)\s*en\sstock'
+        if re.search(pattern, string):
+            return re.search(pattern, string).group(1)
+        return 0
+
+    def get_weight(self, string):
+        if string is None:
+            raise DropItem('Weight required')
+        pattern = r'(\d*[\.\,]?\d+)\s*gramme'
+        if re.search(pattern, string):
+            return re.search(pattern, string).group(1)
+        return 0.
+
+
 class FormattingPipeline:
     def process_item(self, item, spider):
         item.setdefault('old_price', item['price']) 
@@ -361,6 +388,7 @@ class FormattingPipeline:
         item['density'] = self.to_float(item['density'])
         if item.get('raw_string'):
             del item['raw_string']
+        item['stock'] = self.to_int(item['stock'])
         return item
 
     def case_fix(self, string):
@@ -380,3 +408,8 @@ class FormattingPipeline:
             return string
         string = string.replace(',', '.')
         return float(string)
+
+    def to_int(self, string):
+        if not isinstance(string, str):
+            return string
+        return int(string)

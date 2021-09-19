@@ -80,6 +80,7 @@ ITEM_PIPELINES = {
     'extractor.pipelines.SanRivalPipeline': 305,
     'extractor.pipelines.GrainesdelPaisPipeline': 306,
     'extractor.pipelines.GrainesBaumauxPipeline': 307,
+    'extractor.pipelines.PotagerEtGourmandsPipeline': 308,
 
     'extractor.pipelines.FormattingPipeline': 800,
 }
@@ -106,4 +107,4 @@ AUTOTHROTTLE_ENABLED = True
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 # Product names matching one of these regular expressions will be dropped
-FORBIDDEN_PRODUCTS = [r'assortiments?', r'stockage']
+FORBIDDEN_PRODUCTS = [r'assortiments?', r'stockage', r'alcoolature']

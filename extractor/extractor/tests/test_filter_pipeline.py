@@ -18,6 +18,8 @@ from extractor.settings import FORBIDDEN_PRODUCTS
         # ... et ...
         ('betteraves', False),
         #('Carottes et radis', True),
+        ('Armoise annuelle', False),
+        ('Alcoolature d’Artémisia Annua-Alcoolature Dilution 30ML', True)
     ]
 )
 def test_filter_product(product_name, result):

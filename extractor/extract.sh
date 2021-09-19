@@ -1,7 +1,7 @@
 #!/bin/bash
  
 # Declare an array of spider names
-declare -a SpiderArray=("boiteagraines kokopelli biaugerme fermedesaintmarthe comptoirdesgraines sanrival grainesdelpais grainesbaumaux")
+declare -a SpiderArray=("boiteagraines kokopelli biaugerme fermedesaintmarthe comptoirdesgraines sanrival grainesdelpais grainesbaumaux potageetgourmands")
 
  
 # Iterate the string array using for loop
