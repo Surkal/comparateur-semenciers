@@ -390,6 +390,7 @@ class GrainesBaumauxSpider(scrapy.Spider):
 
     
 class PotageEtGourmandsSpider(scrapy.Spider):
+    # very similar to `labanquedegraines.com`
     name = 'potageetgourmands'
     start_urls = ['https://potage-et-gourmands.fr/shop']
 
@@ -429,4 +430,45 @@ class PotageEtGourmandsSpider(scrapy.Spider):
             '.woocommerce-product-details__short-description p::text'
         ).get()
         
+        return item
+
+
+class LaBanqueDeGrainesSpider(scrapy.Spider):
+    # very similar to `potage-et-gourmands.fr`
+    # les poids indiqués ne semblent pas fiables
+    name = 'labanquedegraines'
+    start_urls = ['https://labanquedegraines.com/categorie-produit/graines-potageres']
+
+    def parse(self, response):
+        """Process the downloaded response."""
+        product_urls = response.css(
+            '.woocommerce-loop-product__link::attr(href)'
+        ).getall()
+        for product_url in product_urls:
+            yield scrapy.Request(response.urljoin(product_url), self.parse_product)
+
+        next_page_url = response.css('.next::attr(href)').get()
+        if next_page_url is not None:
+            yield scrapy.Request(response.urljoin(next_page_url))
+
+    def parse_product(self, response):
+        """Analysis of the product page."""
+        item = ProductItem()
+        item['url'] = response.url
+        item['vendor'] = parse_url(response.url).netloc
+
+        item['product_name'] = response.css('h1::text').get()
+        item['price'] = response.css('.summary .price bdi::text').get()
+
+        item['available'] = not not response.css('.in-stock')
+        # e.g. « 10 en stock »
+        item['stock'] = response.css('.stock::text').get()
+
+        # quantity, e.g. « 15 graines »
+        raw_string = response.css(
+            '.woocommerce-product-details__short-description p::text'
+        ).getall()
+        raw_string += response.css('#tab-description td::text').getall()
+        item['raw_string'] = ' '.join(raw_string)
+
         return item

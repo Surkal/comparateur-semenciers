@@ -24,6 +24,7 @@ Programme en développement actif.
 - [graines-baumaux.fr](https://www.graines-baumaux.fr/)
 - [grainesdelpais.com](https://www.grainesdelpais.com/)
 - [kokopelli-semences.fr](https://kokopelli-semences.fr)
+- [labanquedegraines.com](https://labanquedegraines.com)
 - [laboiteagraines.com](https://laboiteagraines.com)
 - [potage-et-gourmands.fr](https://potage-et-gourmands.fr)
 - [sanrivaljardin.com](https://sanrivaljardin.com/)

@@ -376,6 +376,32 @@ class PotagerEtGourmandsPipeline:
         return 0.
 
 
+class LaBanqueDeGrainesPipeline:
+    def process_item(self, item, spider):
+        if not item['vendor'].endswith('labanquedegraines.com'):
+            return item
+
+        item['stock'] = self.get_stock(item['stock'])
+        item['seed_number'] = self.get_quantity(item['raw_string'])
+        return item
+
+    def get_stock(self, string):
+        if not string:
+            return 0
+        pattern = r'(\d+)\s*en\sstock'
+        if re.search(pattern, string):
+            return re.search(pattern, string).group(1)
+        return 0
+
+    def get_quantity(self, string):
+        if string is None:
+            raise DropItem('Quantity required')
+        pattern = r'(\d+)\s*graine'
+        if re.search(pattern, string):
+            return re.search(pattern, string).group(1)
+        return 0.
+
+
 class FormattingPipeline:
     def process_item(self, item, spider):
         item.setdefault('old_price', item['price']) 

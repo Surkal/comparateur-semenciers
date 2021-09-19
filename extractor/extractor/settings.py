@@ -81,6 +81,7 @@ ITEM_PIPELINES = {
     'extractor.pipelines.GrainesdelPaisPipeline': 306,
     'extractor.pipelines.GrainesBaumauxPipeline': 307,
     'extractor.pipelines.PotagerEtGourmandsPipeline': 308,
+    'extractor.pipelines.LaBanqueDeGrainesPipeline': 309,
 
     'extractor.pipelines.FormattingPipeline': 800,
 }
