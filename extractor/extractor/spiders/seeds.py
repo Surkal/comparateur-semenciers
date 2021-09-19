@@ -346,3 +346,43 @@ class GrainesdelPaisSpider(scrapy.Spider):
         item['price'] = -1
 
         return item
+
+
+class GrainesBaumauxSpider(scrapy.Spider):
+    name = 'grainesbaumaux'
+    start_urls = [
+        'https://www.graines-baumaux.fr/168712-semences-potageres',
+        'https://www.graines-baumaux.fr/168637-graines-fourrageres-et-engrais-verts',
+        'https://www.graines-baumaux.fr/167226-semences-aromatiques-et-officinales',
+        'https://www.graines-baumaux.fr/167553-semences-florales'
+    ]
+
+    def parse(self, response):
+        """Process the downloaded response."""
+        product_urls = response.css('.product-title a::attr(href)').getall()
+        for product_url in product_urls:
+            yield scrapy.Request(response.urljoin(product_url), self.parse_product)
+
+        categorie_urls = response.css('.subcategory-link::attr(href)').getall()
+        for categorie_url in categorie_urls:
+            yield scrapy.Request(response.urljoin(categorie_url))
+
+        next_page_url = response.css('.next::attr(href)').get()
+        if next_page_url is not None:
+            yield scrapy.Request(response.urljoin(next_page_url))
+
+    def parse_product(self, response):
+        """Analysis of the product page."""
+        item = ProductItem()
+        item['url'] = response.url
+        item['vendor'] = parse_url(response.url).netloc
+
+        item['product_name'] = response.css('h1::text').get()
+        item['price'] = response.css('.current-price span::attr(content)').get()
+        item['available'] = not not response.css('span.font-extra .product-available').get()
+        item['promotion'] = not not response.css('.product-discount').getall()
+
+        # weight e.g. : « 0,25 g. NT »
+        item['raw_string'] = response.css('div[itemprop~=description]::text').get()
+
+        return item

@@ -18,7 +18,7 @@ FEED_EXPORT_ENCODING = 'utf-8'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'extractor (+http://www.yourdomain.com)'
-USER_AGENT = '	Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.7113.93 Safari/537.36'
+USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.7113.93 Safari/537.36'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
@@ -79,6 +79,7 @@ ITEM_PIPELINES = {
     'extractor.pipelines.ComptoirdesgrainesPipeline': 304,
     'extractor.pipelines.SanRivalPipeline': 305,
     'extractor.pipelines.GrainesdelPaisPipeline': 306,
+    'extractor.pipelines.GrainesBaumauxPipeline': 307,
 
     'extractor.pipelines.FormattingPipeline': 800,
 }

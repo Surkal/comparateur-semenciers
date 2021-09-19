@@ -308,6 +308,47 @@ class GrainesdelPaisPipeline:
         return 0.
 
 
+class GrainesBaumauxPipeline:
+    def process_item(self, item, spider):
+        if not item['vendor'].endswith('graines-baumaux.fr'):
+            return item
+
+        item['weight'] = self.get_weight(item['raw_string'])
+        if not item['weight']:
+            item['weight'] = self.get_weight_from_name(item['product_name'])
+        item['product_name'] = self.parse_name(item['product_name'])
+
+        item['price'] = self.get_price(item['price'])
+        if (item.get('old_price')):
+            item['old_price'] = self.get_price(item['old_price'])
+        return item
+
+    def get_weight(self, string):
+        if not string: return 0.
+        pattern = r'((?:\d+[\.\,])?\d+)\s*g\.'
+        if re.search(pattern, string):
+            return re.search(pattern, string).group(1)
+        return 0.
+
+    def get_weight_from_name(self, string):
+        pattern = re.compile(r'(\d+)\s*KILO', re.IGNORECASE)
+        if re.search(pattern, string):
+            # en kilo !
+            return re.search(pattern, string).group(1) + '000'
+        return 0.
+
+    def parse_name(self, name):
+        name = name.strip()
+        pattern = re.compile(r'^\s*bio\s+', re.IGNORECASE)  # se termine parfois par "bio" ou "BIO", parfois " BIO - ..."
+        return re.sub(pattern, '', name)
+
+    def get_price(self, string):
+        pattern = pattern = r'((?:\d+[\.\,])?\d+)\s*€?'
+        if re.search(pattern, string):
+            return re.search(pattern, string).group(1)
+        return ''
+
+
 class FormattingPipeline:
     def process_item(self, item, spider):
         item.setdefault('old_price', item['price']) 
