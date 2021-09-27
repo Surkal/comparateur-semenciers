@@ -63,6 +63,7 @@ class KokopelliSpider(scrapy.Spider):
         item['url'] = response.url
         item['vendor'] = parse_url(response.url).netloc
 
+        # item['product_name'] = response.css('h1::text').get()
         item['promotion'] = any(x == "PROMOTION" for x in response.css('h3::text').getall())
         item['description'] = response.css('.product__description p::text').getall()
         item['raw_string'] = response.css('.product__informations li::text').getall()  # Array
@@ -193,7 +194,6 @@ class ComptoirdesgrainesSpider(scrapy.Spider):
         
         # seed number
         item['raw_string'] = response.css('.seed-number::text').get().strip()
-
         return item
 
 
@@ -212,12 +212,6 @@ class GrainesdefolieSpider(scrapy.Spider):
         """Process the downloaded response."""
         pattern = r'ajax_token\s*=\s*"([^"]+)'
         token = re.search(pattern, response.text).group(1)
-        formdata = {
-            'token': token,
-            'controller': 'product',
-            'id_customization': '0',
-            'qty': '1'
-        }
 
         next_page_url = response.css('.next::attr(href)').get()
         if next_page_url is not None:
@@ -229,26 +223,10 @@ class GrainesdefolieSpider(scrapy.Spider):
             values = response.css(f'.productattributelist[data-id~="{product_id}"] option::attr(value)').getall()
             quantities[product_id] = values
         
-        """
-        product_urls = response.css('.product-title a::attr(href)').getall()
-        for product_url in product_urls:
-            match = re.search(r'(\d+)-\d+', product_url)
-            if not match:
-                continue"""
-
-            #id_product = match.group(1)
-            #formdata['id_product'] = id_product
         for id_product in quantities.keys():
             for quantity in quantities[id_product]:
-                formdata['group[5]'] = quantity
-
-                # TODO: erreur 302
-                yield scrapy.FormRequest(
-                    'https://www.grainesdefolie.com/index.php',
-                    self.parse_product,
-                    method='POST',
-                    formdata=formdata
-                )
+                url = f'https://www.grainesdefolie.com/index.php?controller=product&token={token}&id_product={id_product}&id_customization=0&group[5]={quantity}&qty=1'
+                yield scrapy.Request(url, self.parse_product, method='POST')
 
     def parse_product(self, response):
         """Analysis of the product page."""
@@ -256,8 +234,15 @@ class GrainesdefolieSpider(scrapy.Spider):
         item['url'] = response.url
         item['vendor'] = parse_url(response.url).netloc
 
+        # Réécriture de l'url
+        item['url'] = response.css('meta[property~="og:url"]::attr(content)').get()
+
         item['product_name'] = response.css('h1::text').get()
         item['price'] = response.css('span[itemprop~=price]::attr(content)').get()
+
+        # quantity: « 100 graines * » OR « 5 grammes * »
+        item['raw_string'] = response.css('#group_5 option[selected]::text').get()
+
 
         return item
 
@@ -470,5 +455,41 @@ class LaBanqueDeGrainesSpider(scrapy.Spider):
         ).getall()
         raw_string += response.css('#tab-description td::text').getall()
         item['raw_string'] = ' '.join(raw_string)
+
+        return item
+
+
+class PromesseDeFleursSpider(scrapy.Spider):
+    name = 'promessedefleurs'
+    start_urls = ['https://www.promessedefleurs.com/potager/graines-potageres.html']
+
+    def parse(self, response):
+        """Process the downloaded response."""
+        product_urls = response.css(
+            '.product-li .product-image a::attr(href)'
+        ).getall()
+        for product_url in product_urls:
+            yield scrapy.Request(response.urljoin(product_url), self.parse_product)
+
+
+        next_page_number = 2
+        if '?' in response.url:
+            return
+        while next_page_number < 37:
+            # import logging
+            # logging.log(logging.WARNING, f"This is a warning {len(product_urls)} : {product_urls[0]}")
+            next_page_url = f'{response.url}?p={next_page_number}'
+            yield scrapy.Request(response.urljoin(next_page_url))
+            next_page_number += 1
+
+    def parse_product(self, response):
+        """Analysis of the product page."""
+        item = ProductItem()
+        item['url'] = response.url
+        item['vendor'] = parse_url(response.url).netloc
+
+        item['product_name'] = response.css('h1::text').get()
+        item['price'] = response.css('.price > span::text').get()
+
 
         return item

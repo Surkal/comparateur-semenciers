@@ -251,14 +251,31 @@ class GrainesdeFoliePipeline:
         if not item['vendor'].endswith('grainesdefolie.com'):
             return item
 
-        item['product_name'] = self.parse_name(item['product_name'])
+        if item['raw_string'] is None:
+            raise DropItem('quantité incorrecte')
 
+        item['product_name'] = self.parse_name(item['product_name'])
+        item['seed_number'] = self.get_seed_number(item['raw_string'])
+        item['weight'] = self.get_weight(item['raw_string'])
         return item
 
     def parse_name(self, name):
         name = name.strip()
         pattern = re.compile(r'^\s*bio\s+', re.IGNORECASE)  # se termine parfois par "bio" ou "BIO", parfois " BIO - ..."
         return re.sub(pattern, '', name)
+
+    def get_seed_number(self, string):
+        # quasi même fonction que kokopelli et san rival
+        if re.search(r'(\d+)\sgraines?', string):
+            return re.search(r'(\d+)\sgraines?', string).group(1)
+        return 0.
+
+    def get_weight(self, string):
+        # même pattern que laboiteagraines sans la parenthèse du début et même que san rival
+        pattern = r'[^\d]*([\d\,\.]+)\s*gramme'
+        if re.search(pattern, string):
+            return re.search(pattern, string).group(1)
+        return 0.
 
 
 
@@ -273,7 +290,7 @@ class SanRivalPipeline:
         return item
 
     def get_seed_number(self, string):
-        # quasi même fonction que kokopelli
+        # quasi même fonction que kokopelli et grainesdefolie
         if re.search(r'(\d+)\sgraines?', string):
             return re.search(r'(\d+)\sgraines?', string).group(1)
         return 0.

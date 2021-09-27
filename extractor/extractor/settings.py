@@ -77,11 +77,12 @@ ITEM_PIPELINES = {
     'extractor.pipelines.BiaugermePipeline': 302,
     'extractor.pipelines.FermedesaintmarthePipeline': 303,
     'extractor.pipelines.ComptoirdesgrainesPipeline': 304,
-    'extractor.pipelines.SanRivalPipeline': 305,
-    'extractor.pipelines.GrainesdelPaisPipeline': 306,
-    'extractor.pipelines.GrainesBaumauxPipeline': 307,
-    'extractor.pipelines.PotagerEtGourmandsPipeline': 308,
-    'extractor.pipelines.LaBanqueDeGrainesPipeline': 309,
+    'extractor.pipelines.GrainesdeFoliePipeline': 305,
+    'extractor.pipelines.SanRivalPipeline': 306,
+    'extractor.pipelines.GrainesdelPaisPipeline': 307,
+    'extractor.pipelines.GrainesBaumauxPipeline': 308,
+    'extractor.pipelines.PotagerEtGourmandsPipeline': 309,
+    'extractor.pipelines.LaBanqueDeGrainesPipeline': 310,
 
     'extractor.pipelines.FormattingPipeline': 800,
 }

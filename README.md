@@ -16,17 +16,19 @@ Programme en développement actif.
 
 ### Sites supportés
 
-9 sites internet sont actuellement supportés.
+12 sites internet sont actuellement supportés.
 
 - [biaugerme.com](https://biaugerme.com)
 - [comptoir-des-graines.fr](https://www.comptoir-des-graines.fr)
 - [fermedesaintemarthe.com](https://fermedesaintemarthe.com)
 - [graines-baumaux.fr](https://www.graines-baumaux.fr/)
+- [grainesdefolie.com](https://www.grainesdefolie.com)
 - [grainesdelpais.com](https://www.grainesdelpais.com/)
 - [kokopelli-semences.fr](https://kokopelli-semences.fr)
 - [labanquedegraines.com](https://labanquedegraines.com)
 - [laboiteagraines.com](https://laboiteagraines.com)
 - [potage-et-gourmands.fr](https://potage-et-gourmands.fr)
+* [promessedefleurs.com](https://www.promessedefleurs.com)
 - [sanrivaljardin.com](https://sanrivaljardin.com/)
 
 ## Tests
